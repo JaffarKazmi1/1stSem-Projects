@@ -1,0 +1,949 @@
+**REVERSI/OTHELLO**
+
+#include <iostream>
+#include <fstream>
+using namespace std;
+
+void InitializeBoard(char board[8][8]);
+void DisplayBoard(char board[8][8]);
+bool ValidMove(char board[8][8], int rows, int cols);
+bool SpaceChecker(char board[8][8]);
+void MakeMove(char board[8][8], int row, int cols, char player_move);
+void TurnManager(int& turn);
+int CrossToken(char board[8][8]);
+int CircleToken(char board[8][8]);
+void FlipPossibleToken(char board[8][8], int rows, int cols, char player_move);
+bool flip_possible_token(char board[8][8], int rows, int cols, char player_move);
+void ComputerMove(char board[8][8]);
+void flip_in_rows_test(char board[8][8], int rows, int cols, char player_move);
+void flip_in_cols_test(char board[8][8], int rows, int cols, char player_move);
+void flip_in_main_diag_test(char board[8][8], int rows, int cols, char player_move);
+void flip_in_sec_diag_test(char board[8][8], int rows, int cols, char player_move);
+bool flip_in_cols_valid(char board[8][8], int rows, int cols, char player_move);
+bool flip_in_rows_valid(char board[8][8], int rows, int cols, char player_move);
+bool flip_in_main_diag_valid(char board[8][8], int rows, int cols, char player_move);
+bool flip_in_sec_diag_valid(char board[8][8], int rows, int cols, char player_move);
+void DisplayCounter(char board[8][8]);
+void Welcome();
+
+
+int main()
+{
+	Welcome();
+	char user_choice;
+	cout << "Enter (a) for player 1 vs player 2 : " << endl;
+	cout << "Enter (b) for player vs computer : " << endl;
+	cin >> user_choice;
+
+	if (user_choice == 'a' || user_choice == 'A')
+	{
+		char board[8][8];
+		char User = 'X';
+		char User2 = 'O';
+		bool end = false;
+		int playerTurn = 0;
+		InitializeBoard(board);
+		while (SpaceChecker(board) == true)
+		{
+			end = false;
+
+			while (!end and SpaceChecker(board))
+			{
+
+
+				DisplayBoard(board);
+				if (playerTurn == 0)
+				{
+					int row;
+					int cols;
+					cout << "player 1 enter your  row(0-7) " << endl;
+					cin >> row;
+					cout << "player 1 enter your column(0-7)" << endl;
+					cin >> cols;
+					while (!ValidMove(board, row, cols))
+					{
+						cout << "yout move is invalid " << endl;
+						cout << "enter rows and column again (0-7): " << endl;
+						cin >> row;
+						cin >> cols;
+					}
+					MakeMove(board, row, cols, User);
+					FlipPossibleToken(board, row, cols, User);
+				}
+				else
+				{
+					int row2;
+					int col2;
+					cout << "player 2 enter row(0-7) " << endl;
+					cin >> row2;
+					cout << "player 2 enter column(0-7)" << endl;
+					cin >> col2;
+
+					while (!ValidMove(board, row2, col2))
+					{
+						cout << "your move is invalid " << endl;
+						cout << "enter rows and cols again (0-7)" << endl;
+						cin >> row2;
+						cin >> col2;
+					}
+					MakeMove(board, row2, col2, User2);
+					FlipPossibleToken(board, row2, col2, User2);
+				}
+
+				DisplayCounter(board);
+				
+				TurnManager(playerTurn);
+
+			}
+		}
+		int cross = CrossToken(board);
+		int circle = CircleToken(board);
+
+		if (cross > circle)
+		{
+			cout << "Cross is the winner!!!";
+			return 0;
+		}
+		else if (cross < circle)
+		{
+			cout << "Circle is the winner!!!";
+			return 0;
+		}
+		else
+		{
+			cout << "Its a tie." << endl;
+			return 0;
+		}
+	}
+	else if (user_choice == 'b' || user_choice == 'B')
+	{
+		char board[8][8];
+		char User = 'X';
+		bool end = false;
+		int playerTurn = 0;
+		char computer = 'O';
+		InitializeBoard(board);
+		while (SpaceChecker(board))
+		{
+			end = false;
+
+			while (!end && SpaceChecker(board))
+			{
+
+				DisplayBoard(board);
+				if (playerTurn == 0)
+				{
+					int row;
+					int cols;
+					cout << "player 1 enter your  row(0-7) " << endl;
+					cin >> row;
+					cout << "player 1 enter your column(0-7)" << endl;
+					cin >> cols;
+					while (!ValidMove(board, row, cols))
+					{
+						cout << "yout move is invalid " << endl;
+						cout << "enter rows and column again (0-7): " << endl;
+						cin >> row;
+						cin >> cols;
+					}
+					MakeMove(board, row, cols, User);
+					FlipPossibleToken(board, row, cols, User);
+
+				}
+				else
+				{
+
+					cout << "Computer is taking its turn " << endl;
+
+					ComputerMove(board);
+
+
+
+				}
+
+				DisplayCounter(board);
+				TurnManager(playerTurn);
+
+			}
+		}
+		int cross = CrossToken(board);
+		int circle = CircleToken(board);
+
+		if (cross > circle)
+		{
+			cout << "Cross is the winner!!!";
+			return 0;
+		}
+		else if (cross < circle)
+		{
+			cout << "Computer is the winner!!!";
+			return 0;
+		}
+		else
+		{
+			cout << "Its a tie." << endl;
+			return 0;
+		}
+	}
+
+
+}
+void InitializeBoard(char board[8][8])
+{
+	ifstream reader;
+	reader.open("board.txt");
+
+	if (!reader)
+	{
+		cout << "Error 404, couldnt open the file..." << endl;
+	}
+
+	for (int i = 0; i < 8; i++)
+	{
+		for (int j = 0; j < 8; j++)
+		{
+			board[i][j] = '-';
+		}
+	}
+	board[3][3] = 'X';
+	board[3][4] = 'O';
+	board[4][3] = 'O';
+	board[4][4] = 'X';
+
+	reader.close();
+}
+void DisplayBoard(char board[8][8])
+{
+	cout << " ";
+	for (int j = 0; j < 8; j++)
+	{
+		cout << "    " << j << "  ";
+	}
+	cout << endl;
+	for (int i = 0; i < 8; i++)
+	{
+		cout << "  " << i << "  ";
+		for (int j = 0; j < 8; j++)
+		{
+			cout << board[i][j];
+			if (j < 7)
+			{
+				cout << "  |   ";
+			}
+
+		}
+		cout << endl;
+		if (i < 7)
+		{
+			cout << "   ------------------------------------------------------" << endl;
+		}
+	}
+
+	cout << endl;
+}
+bool ValidMove(char board[8][8], int rows, int cols)
+{
+
+	if (rows < 0 || rows>7 || cols < 0 || cols>7)
+	{
+		return false;
+	}
+	if (board[rows][cols] != '-')
+	{
+
+		cout << "This spot is alreadt taken. Plase choose a valid spot." << endl;
+		return false;
+	}
+
+	return true;
+}
+bool SpaceChecker(char board[8][8])
+{
+	for (int i = 0; i < 8; i++)
+	{
+		for (int j = 0; j < 8; j++)
+		{
+			if (board[i][j] == '-')
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+void MakeMove(char board[8][8], int row, int cols, char player_move)
+{
+	board[row][cols] = player_move;
+}
+void TurnManager(int& turn)
+{
+	if (turn == 0)
+	{
+		turn = 1;
+	}
+	else
+	{
+		turn = 0;
+	}
+}
+int CrossToken(char board[8][8])
+{
+	int ct = 0;
+	for (int i = 0; i < 8; i++)
+	{
+		for (int j = 0; j < 8; j++)
+		{
+			if (board[i][j] == 'X')
+			{
+				ct++;
+			}
+		}
+	}
+
+	return ct;
+}
+int CircleToken(char board[8][8])
+{
+	int ct = 0;
+	for (int i = 0; i < 8; i++)
+	{
+		for (int j = 0; j < 8; j++)
+		{
+			if (board[i][j] == 'O')
+			{
+				ct++;
+			}
+		}
+	}
+
+	return ct;
+}
+void FlipPossibleToken(char board[8][8], int rows, int cols, char player_move)
+{
+	flip_in_rows_test(board, rows, cols, player_move);
+	flip_in_cols_test(board, rows, cols, player_move);
+	flip_in_main_diag_test(board, rows, cols, player_move);
+	flip_in_sec_diag_test(board, rows, cols, player_move);
+
+}
+bool flip_possible_token(char board[8][8], int rows, int cols, char player_move)
+{
+	if (flip_in_rows_valid(board, rows, cols, player_move) == true)
+	{
+		return true;
+	}
+	else if (flip_in_cols_valid(board, rows, cols, player_move) == true)
+	{
+		return true;
+	}
+	else if (flip_in_main_diag_valid(board, rows, cols, player_move) == true)
+	{
+		return true;
+	}
+	else if (flip_in_sec_diag_valid(board, rows, cols, player_move) == true)
+	{
+		return true;
+	}
+
+	return false;
+}
+void ComputerMove(char board[8][8])
+{
+	char computer_move = 'O';
+
+	for (int i = 0; i < 8; i++)
+	{
+		for (int j = 0; j < 8; j++)
+		{
+			if (flip_in_rows_valid(board, i, j, computer_move) == true)
+			{
+
+				flip_in_rows_test(board, i, j, computer_move);
+				return;
+			}
+			else if (flip_in_cols_valid(board, i, j, computer_move) == true)
+			{
+
+				flip_in_cols_test(board, i, j, computer_move);
+				return;
+
+			}
+			else if (flip_in_main_diag_valid(board, i, j, computer_move) == true)
+			{
+
+				flip_in_main_diag_test(board, i, j, computer_move);
+				return;
+			}
+			else if (flip_in_sec_diag_valid(board, i, j, computer_move) == true)
+			{
+
+				flip_in_sec_diag_test(board, i, j, computer_move);
+				return;
+			}
+		}
+	}
+
+}
+void flip_in_rows_test(char board[8][8], int rows, int cols, char player_move)
+{
+
+	//for row left
+	int ct = 0;
+	int j = cols - 1;
+
+	while (j >= 0)
+	{
+		if (board[rows][j] == '-')
+		{
+			break;
+		}
+		else if (board[rows][j] == player_move)
+		{
+			break;
+		}
+		else
+		{
+			ct++;
+		}
+		j--;
+	}
+
+	if (ct > 0 && j >= 0 && board[rows][j] == player_move)
+	{
+		for (int i = cols; i > j; i--)
+		{
+			board[rows][i] = player_move;
+		}
+	}
+
+	//for row right
+
+	j = cols + 1;
+	ct = 0;
+	while (j < 8)
+	{
+		if (board[rows][j] == '-')
+		{
+			break;
+		}
+		else if (board[rows][j] == player_move)
+		{
+			break;
+		}
+		else
+		{
+			ct++;
+		}
+		j++;
+	}
+
+
+	if (ct > 0 && j < 8 && board[rows][j] == player_move)
+	{
+		for (int i = cols; i < j; i++)
+		{
+			board[rows][i] = player_move;
+		}
+	}
+}
+void flip_in_cols_test(char board[8][8], int rows, int cols, char player_move)
+{
+
+
+	//for column upwards
+	int ct = 0;
+	int i = rows - 1;
+
+	while (i >= 0)
+	{
+		if (board[i][cols] == '-')
+		{
+			break;
+		}
+		if (board[i][cols] == player_move)
+		{
+			break;
+		}
+		if (board[i][cols] != player_move && board[i][cols] != '-')
+		{
+			ct++;
+		}
+		i--;
+	}
+
+
+	if (ct > 0 && i >= 0 && board[i][cols] == player_move)
+	{
+		for (int j = rows; j > i; j--)
+		{
+			board[j][cols] = player_move;
+		}
+	}
+
+	//for columns down
+
+	ct = 0;
+	i = rows + 1;
+
+	while (i < 8)
+	{
+		if (board[i][cols] == '-')
+		{
+			break;
+		}
+		if (board[i][cols] == player_move)
+		{
+			break;
+		}
+		if (board[i][cols] != player_move && board[i][cols] != '-')
+		{
+			ct++;
+		}
+		i++;
+	}
+
+
+	if (ct > 0 && i < 8 && board[i][cols] == player_move)
+	{
+		for (int j = rows; j < i; j++)
+		{
+			board[j][cols] = player_move;
+		}
+	}
+}
+void flip_in_main_diag_test(char board[8][8], int rows, int cols, char player_move)
+{
+
+	//for right side
+
+	int ct = 0;
+	int i = rows + 1;
+	int j = cols + 1;
+
+	while (i < 8 && j < 8)
+	{
+		if (board[i][j] == '-')
+		{
+			break;
+		}
+		if (board[i][j] == player_move)
+		{
+			break;
+		}
+		if (board[i][j] != player_move && board[i][j] != '-')
+		{
+			ct++;
+		}
+		i++;
+		j++;
+	}
+
+
+	if (ct > 0 && i < 8 && j < 8 && board[i][j] == player_move)
+	{
+
+
+		i = rows + 1;
+		j = cols + 1;
+
+
+		for (int k = 1; k <= ct; k++)
+		{
+			board[i][j] = player_move;
+			i++;
+			j++;
+		}
+	}
+
+	//for diagnol leftwards
+
+	ct = 0;
+	i = rows - 1;
+	j = cols - 1;
+
+	while (i >= 0 && j >= 0)
+	{
+		if (board[i][j] == '-')
+		{
+			break;
+		}
+		if (board[i][j] == player_move)
+		{
+			break;
+		}
+		if (board[i][j] != player_move && board[i][j] != '-')
+		{
+			ct++;
+		}
+		i--;
+		j--;
+	}
+
+
+	if (ct > 0 && i >= 0 && j >= 0 && board[i][j] == player_move)
+	{
+
+
+		i = rows - 1;
+		j = cols - 1;
+
+		for (int k = 1; k <= ct; k++)
+		{
+			board[i][j] = player_move;
+			i--;
+			j--;
+		}
+	}
+}
+void flip_in_sec_diag_test(char board[8][8], int rows, int cols, char player_move)
+{
+	//for right side 
+
+	int ct = 0;
+	int i = rows + 1;
+	int j = cols - 1;
+
+	while (i < 8 && j >= 0)
+	{
+		if (board[i][j] == '-')
+		{
+			break;
+		}
+		if (board[i][j] == player_move)
+		{
+			break;
+		}
+		if (board[i][j] != player_move && board[i][j] != '-')
+		{
+			ct++;
+		}
+		i++;
+		j--;
+	}
+
+
+	if (ct > 0 && i < 8 && j >= 0 && board[i][j] == player_move)
+	{
+		i = rows + 1;
+		j = cols - 1;
+		for (int k = 1; k <= ct; k++)
+		{
+			board[i][j] = player_move;
+			i++;
+			j--;
+		}
+	}
+
+	//for left side 
+
+	ct = 0;
+	i = rows - 1;
+	j = cols + 1;
+
+	while (i >= 0 && j < 8)
+	{
+		if (board[i][j] == '-')
+		{
+			break;
+		}
+		if (board[i][j] == player_move)
+		{
+			break;
+		}
+		if (board[i][j] != player_move && board[i][j] != '-')
+		{
+			ct++;
+		}
+		i--;
+		j++;
+	}
+
+
+	if (ct > 0 && i >= 0 && j < 8 && board[i][j] == player_move)
+	{
+		i = rows - 1;
+		j = cols + 1;
+
+		for (int k = 1; k <= ct; k++)
+		{
+			board[i][j] = player_move;
+			i--;
+			j++;
+		}
+	}
+}
+bool flip_in_rows_valid(char board[8][8], int rows, int cols, char player_move)
+{
+
+
+	//for row left
+	int ct = 0;
+	int j = cols - 1;
+
+	while (j >= 0)
+	{
+		if (board[rows][j] == '-')
+		{
+			break;
+		}
+		if (board[rows][j] == player_move)
+		{
+			break;
+		}
+		if (board[rows][j] != player_move && board[rows][j] != '-')
+		{
+			ct++;
+		}
+		j--;
+	}
+
+	if (ct > 0 && j >= 0 && board[rows][j] == player_move)
+	{
+		return true;
+	}
+
+	//for row right
+
+	j = cols + 1;
+	ct = 0;
+	while (j < 8)
+	{
+		if (board[rows][j] == '-')
+		{
+			break;
+		}
+		if (board[rows][j] == player_move)
+		{
+			break;
+		}
+		if (board[rows][j] != player_move && board[rows][j] != '-')
+		{
+			ct++;
+		}
+		j++;
+	}
+
+
+	if (ct > 0 && j < 8 && board[rows][j] == player_move)
+	{
+		return true;
+	}
+
+	return false;
+}
+bool flip_in_cols_valid(char board[8][8], int rows, int cols, char player_move)
+{
+
+
+
+	//for column upwards
+	int ct = 0;
+	int i = rows - 1;
+
+	while (i >= 0)
+	{
+		if (board[i][cols] == '-')
+		{
+			break;
+		}
+		if (board[i][cols] == player_move)
+		{
+			break;
+		}
+		if (board[i][cols] != player_move && board[i][cols] != '-')
+		{
+			ct++;
+		}
+		i--;
+	}
+
+
+	if (ct > 0 && i >= 0 && board[i][cols] == player_move)
+	{
+		return true;
+	}
+
+	//for columns down
+
+	ct = 0;
+	i = rows + 1;
+
+	while (i < 8)
+	{
+		if (board[i][cols] == '-')
+		{
+			break;
+		}
+		if (board[i][cols] == player_move)
+		{
+			break;
+		}
+		if (board[i][cols] != player_move && board[i][cols] != '-')
+		{
+			ct++;
+		}
+		i++;
+	}
+
+
+	if (ct > 0 && i < 8 && board[i][cols] == player_move)
+	{
+		return true;
+	}
+
+	return false;
+}
+bool flip_in_main_diag_valid(char board[8][8], int rows, int cols, char player_move)
+{
+
+	//for right side
+
+	int ct = 0;
+	int i = rows + 1;
+	int j = cols + 1;
+
+	while (i < 8 && j < 8)
+	{
+		if (board[i][j] == '-')
+		{
+			break;
+		}
+		if (board[i][j] == player_move)
+		{
+			break;
+		}
+		if (board[i][j] != player_move && board[i][j] != '-')
+		{
+			ct++;
+		}
+		i++;
+		j++;
+	}
+
+	if (ct > 0 && i < 8 && j < 8 && board[i][j] == player_move)
+	{
+		return true;
+	}
+
+	//for diagnol leftwards
+
+	ct = 0;
+	i = rows - 1;
+	j = cols - 1;
+
+	while (i >= 0 && j >= 0)
+	{
+		if (board[i][j] == '-')
+		{
+			break;
+		}
+		if (board[i][j] == player_move)
+		{
+			break;
+		}
+		if (board[i][j] != player_move && board[i][j] != '-')
+		{
+			ct++;
+		}
+		i--;
+		j--;
+	}
+
+	if (ct > 0 && i >= 0 && j >= 0 && board[i][j] == player_move)
+	{
+		return true;
+	}
+	return false;
+}
+bool flip_in_sec_diag_valid(char board[8][8], int rows, int cols, char player_move)
+{
+
+
+	//for right side 
+
+	int ct = 0;
+	int i = rows + 1;
+	int j = cols - 1;
+
+	while (i < 8 && j >= 0)
+	{
+		if (board[i][j] == '-')
+		{
+			break;
+		}
+		if (board[i][j] == player_move)
+		{
+			break;
+		}
+		if (board[i][j] != player_move && board[i][j] != '-')
+		{
+			ct++;
+		}
+		i++;
+		j--;
+	}
+
+
+	if (ct > 0 && i < 8 && j >= 0 && board[i][j] == player_move)
+	{
+		return true;
+	}
+
+	//for left side 
+
+	ct = 0;
+	i = rows - 1;
+	j = cols + 1;
+
+	while (i >= 0 && j < 8)
+	{
+		if (board[i][j] == '-')
+		{
+			break;
+		}
+		if (board[i][j] == player_move)
+		{
+			break;
+		}
+		if (board[i][j] != player_move && board[i][j] != '-')
+		{
+			ct++;
+		}
+		i++;
+		j--;
+	}
+
+
+	if (ct > 0 && i >= 0 && j < 8 && board[i][j] == player_move)
+	{
+		return true;
+	}
+
+	return false;
+}
+void DisplayCounter(char board[8][8])
+{
+	system("cls");
+	
+	int cross = CrossToken(board);
+	int circle = CircleToken(board);
+	cout << "Cross: " << cross << " | Circle: " << circle << endl;
+
+}
+void Welcome()
+{
+	cout << "******************************************************" << endl;
+	cout << "*                                                    *" << endl;
+	cout << "*     W E L C O M E    T O    O U R    G A M E       *" << endl;
+	cout << "*                                                    *" << endl;
+	cout << "******************************************************" << endl;
+	cout << endl;
+	cout << "  _____                                 " << endl;
+	cout << " |     |  ____             ____   ____   _____  ______   " << endl;
+	cout << " |_____| |      \\      /  |      |    | |         |      " << endl;
+	cout << " |\\      |___    \\    /   |___   |____| |____     |      " << endl;
+	cout << " | \\     |        \\  /    |      |\\          |    |      " << endl;
+	cout << " |  \\    |____     \\/     |____  | \\    _____|  ______   " << endl;
+	cout << endl;
+}
