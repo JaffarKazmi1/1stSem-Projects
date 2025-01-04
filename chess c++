@@ -1,0 +1,1309 @@
+**CHESS**
+
+#include <iostream>
+#include <fstream>
+using namespace std;
+
+void InitializeBoard(char** board);
+void DisplayBoard(char** board);
+bool ValidMove(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int turn, int playerTurn);
+bool KingValidity(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int playerTurn);
+bool QueenValidity(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int playerTurn);
+bool RookValidity(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int playerTurn);
+bool PawnValidity(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int turn, int playerTurn);
+bool BishopValidity(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int playerTurn);
+bool KnightValidity(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int playerTurn);
+void MakeMove(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int playerTurn);
+bool OwnToken(char** board, int starting_row, int starting_col, int playerTurn);
+void KingMove(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int playerTurn);
+void QueenMove(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int playerTurn);
+void RookMove(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int playerTurn);
+void PawnMove(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int playerTurn);
+void BishopMove(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int playerTurn);
+void KnightMove(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int playerTurn);
+bool isCheck(char** board, int playerTurn);
+void PawnPromotion(char** board, int playerTurn);
+bool PawnCapture(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int playerTurn);
+void intialize(char**& board);
+void display(char**& board);
+
+int main()
+{
+	int rows = 8;
+	int cols = 8;
+
+	char** board = new char* [rows];
+
+	for (int i = 0; i < rows; i++)
+	{
+		board[i] = new char[cols];
+	}
+
+	bool end = false;
+	int playerTurn = 0;
+	int turn_ct = 0;
+	InitializeBoard(board);
+
+	while (true)
+	{
+
+
+		while (!end)
+		{
+
+			cout << "Player 1 is in Capital letters" << endl;
+			cout << "Player 2 is in small letters" << endl;
+			DisplayBoard(board);
+			if (playerTurn == 0)
+			{
+
+				int rows_s;
+				int cols_s;
+				int rows_e;
+				int cols_e;
+
+				cout << "player 1 enter your row.no to go from :" << endl;
+				cin >> rows_s;
+				cout << "player 1 enter your col.no to go from :" << endl;
+				cin >> cols_s;
+				cout << "player 1 enter your rows.no to go to : " << endl;
+				cin >> rows_e;
+				cout << "player 1 enter your col.no to go to : " << endl;
+				cin >> cols_e;
+
+
+				while (!(ValidMove(board, rows_s, cols_s, rows_e, cols_e, turn_ct, playerTurn) &&
+					OwnToken(board, rows_s, cols_s, playerTurn)))
+				{
+					cout << "your move is invalid " << endl;
+					cout << "player 1 enter your row.no to go from :" << endl;
+					cin >> rows_s;
+					cout << "player 1 enter your col.no to go from :" << endl;
+					cin >> cols_s;
+					cout << "player 1 enter your rows.no to go to : " << endl;
+					cin >> rows_e;
+					cout << "player 1 enter your col.no to go to : " << endl;
+					cin >> cols_e;
+				}
+				MakeMove(board, rows_s, cols_s, rows_e, cols_e, playerTurn);
+				/*if (isCheck(board, playerTurn))
+				{
+					cout << "Move puts your king in check." << endl;
+				}*/
+				PawnPromotion(board, playerTurn);
+				turn_ct++;
+				playerTurn = 1;
+
+			}
+			else
+			{
+				char user2;
+				int rows2_s;
+				int cols2_s;
+				int rows2_e;
+				int cols2_e;
+
+				cout << "player 2 enter your row.no to go from :" << endl;
+				cin >> rows2_s;
+				cout << "player 2 enter your col.no to go from :" << endl;
+				cin >> cols2_s;
+				cout << "player 2 enter your rows.no to go to : " << endl;
+				cin >> rows2_e;
+				cout << "player 2 enter your col.no to go to : " << endl;
+				cin >> cols2_e;
+
+				while (!(ValidMove(board, rows2_s, cols2_s, rows2_e, cols2_e, turn_ct, playerTurn) &&
+					OwnToken(board, rows2_s, cols2_s, playerTurn) && isCheck(board, playerTurn)))
+				{
+					cout << "your move is invalid" << endl;
+					cout << "player 2 enter your row.no to go from :" << endl;
+					cin >> rows2_s;
+					cout << "player 2 enter your col.no to go from :" << endl;
+					cin >> cols2_s;
+					cout << "player 2 enter your rows.no to go to : " << endl;
+					cin >> rows2_e;
+					cout << "player 2 enter your col.no to go to : " << endl;
+					cin >> cols2_e;
+				}
+				MakeMove(board, rows2_s, cols2_s, rows2_e, cols2_e, playerTurn);
+				/*if (isCheck(board, playerTurn))
+				{
+					cout << "Move puts your king in check." << endl;
+				}*/
+				PawnPromotion(board, playerTurn);
+				turn_ct++;
+				playerTurn = 0;
+
+
+
+			}
+		}
+	}
+
+	for (int i = 0; i < rows; i++)
+	{
+		delete[]board[i];
+	}
+
+	delete[]board;
+
+	return 0;
+}
+
+
+void intialize(char**& board)
+{
+
+	board = new char* [8];
+	for (int i = 0; i < 8; ++i) {
+		board[i] = new char[8];
+	}
+	ifstream file("board.txt");
+	for (int i = 0; i < 8; i++)
+	{
+		for (int j = 0; j < 8; j++)
+		{
+			file >> board[i][j];
+		}
+
+	}
+	file.close();
+}
+void display(char**& board)
+{
+
+
+	for (int i = 0; i < 8; ++i) {
+		for (int j = 0; j < 8; ++j) {
+			cout << board[i][j] << " ";
+		}
+		cout << endl;
+	}
+
+
+}
+void InitializeBoard(char** board)
+{
+
+	for (int i = 0; i < 8; i++)
+	{
+		for (int j = 0; j < 8; j++)
+		{
+			board[i][j] = ' ';
+		}
+	}
+
+	char king_1 = 'K';
+	char queen_1 = 'Q';
+	char rook_1 = 'R';
+	char bishop_1 = 'B';
+	char knight_1 = 'N';
+	char powns_1 = 'P';
+
+	board[0][0] = rook_1;
+	board[0][1] = knight_1;
+	board[0][2] = bishop_1;
+	board[0][3] = queen_1;
+	board[0][4] = king_1;
+	board[0][5] = bishop_1;
+	board[0][6] = knight_1;
+	board[0][7] = rook_1;
+
+	int rows = 1;
+
+	for (int j = 0; j < 8; j++)
+	{
+		board[rows][j] = powns_1;
+	}
+
+
+
+	char king_2 = 'k';
+	char queen_2 = 'q';
+	char rook_2 = 'r';
+	char bishop_2 = 'b';
+	char knight_2 = 'n';
+	char powns_2 = 'p';
+	rows = 6;
+
+	for (int j = 0; j < 8; j++)
+	{
+		board[rows][j] = powns_2;
+	}
+
+	board[7][0] = rook_2;
+	board[7][1] = knight_2;
+	board[7][2] = bishop_2;
+	board[7][3] = queen_2;
+	board[7][4] = king_2;
+	board[7][5] = bishop_2;
+	board[7][6] = knight_2;
+	board[7][7] = rook_2;
+
+
+}
+void DisplayBoard(char** board)
+{
+	cout << " ";
+	for (int j = 0; j < 8; j++)
+	{
+		cout << "    " << j << "  ";
+	}
+	cout << endl;
+	for (int i = 0; i < 8; i++)
+	{
+		cout << "  " << i << "  ";
+		for (int j = 0; j < 8; j++)
+		{
+			cout << board[i][j];
+			if (j < 7)
+			{
+				cout << "  |   ";
+			}
+
+		}
+		cout << endl;
+		if (i < 7)
+		{
+			cout << "   ------------------------------------------------------" << endl;
+		}
+	}
+
+	cout << endl;
+
+}
+bool KingValidity(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int playerTurn)
+{
+	if (ending_row < 0 || ending_row >= 8 || ending_col < 0 || ending_col >= 8)
+	{
+		return false;
+	}
+
+	if ((ending_row - starting_row == 1) && (ending_col == starting_col))
+	{
+		return true;
+	}
+
+	if ((starting_row - ending_row == 1) && (ending_col == starting_col))
+	{
+		return true;
+	}
+
+	if ((ending_col - starting_col == 1) && (ending_row == starting_row))
+	{
+		return true;
+	}
+
+	if ((starting_col - ending_col == 1) && (ending_row == starting_row))
+	{
+		return true;
+	}
+
+	if ((ending_row - starting_row == 1) && (ending_col - starting_col == 1))
+	{
+		return true;
+	}
+
+	if ((ending_row - starting_row == 1) && (starting_col - ending_col == 1))
+	{
+		return true;
+	}
+
+	if ((starting_row - ending_row == 1) && (ending_col - starting_col == 1))
+	{
+		return true;
+	}
+
+	if ((starting_row - ending_row == 1) && (starting_col - ending_col == 1))
+	{
+		return true;
+	}
+
+
+	return false;
+
+}
+bool QueenValidity(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int playerTurn)
+{
+	if (starting_row < 0 || starting_row >= 8 || starting_col < 0 || starting_col >= 8 ||
+		ending_row < 0 || ending_row >= 8 || ending_col < 0 || ending_col >= 8)
+	{
+		return false;
+	}
+
+
+	//to check horiztonal right
+
+	int i = starting_row;
+
+
+	if (starting_row == ending_row && ending_col > starting_col)
+	{
+		for (int j = starting_col + 1; j <= ending_col; j++)
+		{
+			if (board[i][j] != ' ')
+			{
+				return false;
+			}
+		}
+	}
+
+
+	//to check horizontal left
+
+	i = starting_row;
+
+	if (starting_row == ending_row && ending_col < starting_col)
+	{
+		for (int j = starting_col - 1; j >= ending_col; j--)
+		{
+			if (board[i][j] != ' ')
+			{
+				return false;
+			}
+		}
+	}
+
+
+
+	//to check vertical up
+
+	int j = starting_col;
+
+	if (starting_col == ending_col && ending_row < starting_row)
+	{
+		for (int i = starting_row - 1; i >= ending_row; i--)
+		{
+			if (board[i][j] != ' ')
+			{
+				return false;
+			}
+		}
+	}
+
+
+	//to check vertical down
+
+	j = starting_col;
+
+	if (starting_col == ending_col && ending_row > starting_row)
+	{
+		for (int i = starting_row + 1; i <= ending_row; i++)
+		{
+			if (board[i][j] != ' ')
+			{
+				return false;
+			}
+		}
+	}
+
+
+
+	//to check main diagnol right
+
+	i = starting_row + 1;
+	j = starting_col + 1;
+
+	if (ending_row > starting_row && ending_col > starting_col)
+	{
+		while (i < ending_row && j < ending_col)
+		{
+
+			if (board[i][j] != ' ')
+			{
+				return false;
+			}
+
+			i++;
+			j++;
+		}
+	}
+
+
+
+	//to check main diagnol left
+
+
+	i = starting_row - 1;
+	j = starting_col - 1;
+
+	if (ending_row < starting_row && ending_col < starting_col)
+	{
+
+		while (i > ending_row && j > ending_col)
+		{
+
+			if (board[i][j] != ' ')
+			{
+				return false;
+			}
+
+			i--;
+			j--;
+		}
+
+	}
+
+
+	//to check secondary diagnol right
+
+
+	i = starting_row - 1;
+	j = starting_col + 1;
+
+	if (ending_row < starting_row && ending_col > starting_col)
+	{
+		while (i > ending_row and j < ending_col)
+		{
+
+			if (board[i][j] != ' ')
+			{
+				return false;
+			}
+
+			i--;
+			j++;
+		}
+
+	}
+
+
+
+	//to check secondary diagnol left
+
+	i = starting_row + 1;
+	j = starting_col - 1;
+
+	if (ending_row > starting_row && ending_col < starting_col)
+	{
+		while (i < ending_row && j > ending_col)
+		{
+
+			if (board[i][j] != ' ')
+			{
+				return false;
+			}
+
+			i++;
+			j--;
+		}
+	}
+
+
+
+
+	char end = board[ending_row][ending_col];
+	if (playerTurn == 0 && end >= 'A' && end <= 'Z')
+	{
+		return false;
+	}
+	if (playerTurn == 1 && end >= 'a' && end <= 'z')
+	{
+		return false;
+	}
+
+	return true;
+
+
+}
+bool RookValidity(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int playerTurn)
+{
+	if (starting_row < 0 || starting_row >= 8 || starting_col < 0 || starting_col >= 8 ||
+		ending_row < 0 || ending_row >= 8 || ending_col < 0 || ending_col >= 8)
+	{
+		return false;
+	}
+
+
+	//to check horizontal rihgt
+	else if (starting_row == ending_row && ending_col > starting_col)
+	{
+		for (int j = starting_col + 1; j <= ending_col; j++)
+		{
+			if (board[starting_row][j] != ' ')
+			{
+				return false;
+			}
+		}
+
+	}
+	//to check horizontal left
+	else if (starting_row == ending_row && ending_col < starting_col)
+	{
+		for (int j = starting_col - 1; j >= ending_col; j--)
+		{
+			if (board[starting_row][j] != ' ')
+			{
+				return false;
+			}
+		}
+	}
+
+	//to check vertical top
+
+	else if (starting_col == ending_col && ending_row < starting_row)
+	{
+		for (int i = starting_row - 1; i >= ending_row; i--)
+		{
+			if (board[i][starting_col] != ' ')
+			{
+				return false;
+			}
+		}
+	}
+
+	//to check vertical down
+
+	else if (starting_col == ending_col && ending_row > starting_row)
+	{
+		for (int i = starting_row + 1; i <= ending_row; i++)
+		{
+			if (board[i][starting_col] != ' ')
+			{
+				return false;
+			}
+		}
+	}
+
+	char end = board[ending_row][ending_col];
+	if (playerTurn == 0 && end >= 'A' && end <= 'Z')
+	{
+		return false;
+	}
+	if (playerTurn == 1 && end >= 'a' && end <= 'z')
+	{
+		return false;
+	}
+
+
+	return true;
+}
+bool PawnValidity(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int turn, int playerTurn)
+{
+	if (ending_row < 0 || ending_row >= 8 || ending_col < 0 || ending_col >= 8)
+	{
+		return false;
+	}
+
+	char pawn = board[starting_row][starting_col];
+
+	if (PawnCapture(board, starting_row, starting_col, ending_row, ending_col, playerTurn))
+	{
+		return true;
+	}
+
+	bool FirstMove = (pawn == 'P' && starting_row == 1) || (pawn == 'p' && starting_row == 6);
+
+
+
+	if (pawn == 'P')
+	{
+
+		if (FirstMove && starting_col == ending_col && (ending_row - starting_row == 2))
+		{
+			if (board[starting_row + 1][starting_col] == ' ' && board[ending_row][ending_col] == ' ')
+			{
+				return true;
+
+			}
+		}
+
+		if (starting_col == ending_col && (ending_row - starting_row == 1))
+		{
+			if (board[ending_row][ending_col] == ' ')
+			{
+				return true;
+			}
+		}
+
+		if ((ending_row - starting_row == 1) && (ending_col - starting_col == 1 || starting_col - ending_col == 1))
+		{
+			if (board[ending_row][ending_col] == 'p')
+			{
+				return true;
+			}
+		}
+	}
+
+	if (pawn == 'p')
+	{
+
+		if (FirstMove && starting_col == ending_col && (starting_row - ending_row == 2))
+		{
+			if (board[starting_row - 1][starting_col] == ' ' && board[ending_row][ending_col] == ' ')
+			{
+				return true;
+			}
+		}
+
+
+		if (starting_col == ending_col && (starting_row - ending_row == 1))
+		{
+			if (board[ending_row][ending_col] == ' ')
+			{
+				return true;
+			}
+		}
+
+
+		if ((starting_row - ending_row == 1) && (ending_col - starting_col == 1 || starting_col - ending_col == 1))
+		{
+			if (board[ending_row][ending_col] == 'P')
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+
+
+}
+bool BishopValidity(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int playerTurn)
+{
+	if (ending_row < 0 || ending_row >= 8 || ending_col < 0 || ending_col >= 8)
+	{
+		return false;
+	}
+
+	int i = starting_row;
+	int j = starting_col;
+
+	//to check main diagnol right
+
+	i = starting_row + 1;
+	j = starting_col + 1;
+
+
+	if (ending_row > starting_row && ending_col > starting_col)
+	{
+
+		while (i < ending_row && j < ending_col)
+		{
+			if (board[i][j] != ' ')
+			{
+				return false;
+			}
+			i++;
+			j++;
+		}
+	}
+
+	//to check main diagnol left
+
+
+	i = starting_row - 1;
+	j = starting_col - 1;
+
+	if (ending_row < starting_row && ending_col < starting_col)
+	{
+
+
+		while (i > ending_row && j > ending_col)
+		{
+			if (board[i][j] != ' ')
+			{
+				return false;
+			}
+			i--;
+			j--;
+		}
+	}
+
+
+	//to check secondary diagnol right
+
+
+	i = starting_row - 1;
+	j = starting_col + 1;
+
+	if (ending_row < starting_row && ending_col > starting_col)
+	{
+
+
+		while (i > ending_row && j < ending_col)
+		{
+			if (board[i][j] != ' ')
+			{
+				return false;
+			}
+			i--;
+			j++;
+		}
+	}
+
+	//to check secondary diagnol left
+
+	i = starting_row + 1;
+	j = starting_col - 1;
+
+	if (ending_row > starting_row && ending_col < starting_col)
+	{
+
+
+		while (i < ending_row && j > ending_col)
+		{
+			if (board[i][j] != ' ')
+			{
+				return false;
+			}
+			i++;
+			j--;
+		}
+	}
+	if ((playerTurn == 0 && board[ending_row][ending_col] >= 'A' && board[ending_row][ending_col] <= 'Z') ||
+		(playerTurn == 1 && board[ending_row][ending_col] >= 'a' && board[ending_row][ending_col] <= 'z'))
+	{
+		return false;
+	}
+
+	return true;
+}
+bool KnightValidity(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int playerTurn)
+{
+
+	if (starting_row < 0 || starting_row >= 8 || starting_col < 0 || starting_col >= 8 ||
+		ending_row < 0 || ending_row >= 8 || ending_col < 0 || ending_col >= 8)
+	{
+		return false;
+	}
+
+	//to check L-UP-RIGHT
+	if ((ending_row)-(starting_row) == -2 && (ending_col)-(starting_col) == 1)
+	{
+		if (board[ending_row][ending_col] = ' ' ||
+			((playerTurn == 0 && board[ending_row][ending_col] >= 'a' && board[ending_row][ending_col] <= 'z') ||
+				(playerTurn == 1 && board[ending_row][ending_col] >= 'A' && board[ending_row][ending_col] <= 'Z')))
+		{
+			return true;
+		}
+	}
+
+	//to check L-UP-LEFT
+	if ((ending_row)-(starting_row) == -2 && (ending_col)-(starting_col) == -1)
+	{
+		if (board[ending_row][ending_col] = ' ' ||
+			((playerTurn == 0 && board[ending_row][ending_col] >= 'a' && board[ending_row][ending_col] <= 'z') ||
+				(playerTurn == 1 && board[ending_row][ending_col] >= 'A' && board[ending_row][ending_col] <= 'Z')))
+		{
+			return true;
+		}
+	}
+
+	//to check L-DOWN-RIGHT
+
+	if ((ending_row)-(starting_row) == 2 && (ending_col)-(starting_col) == 1)
+	{
+		if (board[ending_row][ending_col] = ' ' ||
+			((playerTurn == 0 && board[ending_row][ending_col] >= 'a' && board[ending_row][ending_col] <= 'z') ||
+				(playerTurn == 1 && board[ending_row][ending_col] >= 'A' && board[ending_row][ending_col] <= 'Z')))
+		{
+			return true;
+		}
+	}
+
+	//to check L-DOWN-LEFT
+
+	if ((ending_row)-(starting_row) == 2 && (ending_col)-(starting_col) == -1)
+	{
+		if (board[ending_row][ending_col] = ' ' ||
+			((playerTurn == 0 && board[ending_row][ending_col] >= 'a' && board[ending_row][ending_col] <= 'z') ||
+				(playerTurn == 1 && board[ending_row][ending_col] >= 'A' && board[ending_row][ending_col] <= 'Z')))
+		{
+			return true;;
+		}
+	}
+
+
+	//to check L-horizontal-left-DOWN
+
+	if ((ending_row)-(starting_row) == 1 && (ending_col)-(starting_col) == -2)
+	{
+		if (board[ending_row][ending_col] = ' ' ||
+			((playerTurn == 0 && board[ending_row][ending_col] >= 'a' && board[ending_row][ending_col] <= 'z') ||
+				(playerTurn == 1 && board[ending_row][ending_col] >= 'A' && board[ending_row][ending_col] <= 'Z')))
+		{
+			return true;
+		}
+	}
+
+	//to check L-HORIZONTAL-RIGHT-DOWN
+
+	if ((ending_row)-(starting_row) == 1 && (ending_col)-(starting_col) == 2)
+	{
+		if (board[ending_row][ending_col] = ' ' ||
+			((playerTurn == 0 && board[ending_row][ending_col] >= 'a' && board[ending_row][ending_col] <= 'z') ||
+				(playerTurn == 1 && board[ending_row][ending_col] >= 'A' && board[ending_row][ending_col] <= 'Z')))
+		{
+			return true;
+		}
+	}
+
+	//to check L-HORIZONTAL-LEFT-UP
+
+	if ((ending_row)-(starting_row) == -1 && (ending_col)-(starting_col) == -2)
+	{
+		if (board[ending_row][ending_col] = ' ' ||
+			((playerTurn == 0 && board[ending_row][ending_col] >= 'a' && board[ending_row][ending_col] <= 'z') ||
+				(playerTurn == 1 && board[ending_row][ending_col] >= 'A' && board[ending_row][ending_col] <= 'Z')))
+		{
+			return true;
+		}
+	}
+
+	//to check l-horizontal-right-up
+
+	if ((ending_row)-(starting_row) == -1 && (ending_col)-(starting_col) == 2)
+	{
+		if (board[ending_row][ending_col] = ' ' ||
+			((playerTurn == 0 && board[ending_row][ending_col] >= 'a' && board[ending_row][ending_col] <= 'z') ||
+				(playerTurn == 1 && board[ending_row][ending_col] >= 'A' && board[ending_row][ending_col] <= 'Z')))
+		{
+			return true;
+		}
+	}
+
+
+	return false;
+}
+bool ValidMove(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int turn, int playerTurn)
+{
+
+	if (board[starting_row][starting_col] == 'k' || board[starting_row][starting_col] == 'K')
+	{
+		if (KingValidity(board, starting_row, starting_col, ending_row, ending_col, playerTurn))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else if (board[starting_row][starting_col] == 'q' || board[starting_row][starting_col] == 'Q')
+	{
+		if (QueenValidity(board, starting_row, starting_col, ending_row, ending_col, playerTurn))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else if (board[starting_row][starting_col] == 'r' || board[starting_row][starting_col] == 'R')
+	{
+		if (RookValidity(board, starting_row, starting_col, ending_row, ending_col, playerTurn))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else if (board[starting_row][starting_col] == 'p' || board[starting_row][starting_col] == 'P')
+	{
+		if (PawnValidity(board, starting_row, starting_col, ending_row, ending_col, turn, playerTurn))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else if (board[starting_row][starting_col] == 'n' || board[starting_row][starting_col] == 'N')
+	{
+		if (KnightValidity(board, starting_row, starting_col, ending_row, ending_col, playerTurn))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else if (board[starting_row][starting_col] == 'b' || board[starting_row][starting_col] == 'B')
+	{
+		if (BishopValidity(board, starting_row, starting_col, ending_row, ending_col, playerTurn))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+}
+void MakeMove(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int playerTurn)
+{
+	board[ending_row][ending_col] = board[starting_row][starting_col];
+	board[starting_row][starting_col] = ' ';
+
+	/*if (board[starting_row][starting_row] == 'k' || board[starting_row][starting_row] == 'K')
+	{
+		KingMove(board, starting_row, starting_col, ending_row, ending_col, playerTurn);
+		return;
+	}
+	else if (board[starting_row][starting_row] == 'q' || board[starting_row][starting_row] == 'Q')
+	{
+		QueenMove(board, starting_row, starting_col, ending_row, ending_col, playerTurn);
+		return;
+	}
+	else if (board[starting_row][starting_row] == 'r' || board[starting_row][starting_row] == 'R')
+	{
+		RookMove(board, starting_row, starting_col, ending_row, ending_col, playerTurn);
+		return;
+	}
+	else if (board[starting_row][starting_row] == 'p' || board[starting_row][starting_row] == 'P')
+	{
+		PawnMove(board, starting_row, starting_col, ending_row, ending_col, playerTurn);
+		return;
+	}
+	else if (board[starting_row][starting_row] == 'n' || board[starting_row][starting_row] == 'N')
+	{
+		KnightMove(board, starting_row, starting_col, ending_row, ending_col, playerTurn);
+		return;
+	}
+	else if (board[starting_row][starting_row] == 'b' || board[starting_row][starting_row] == 'B')
+	{
+		BishopMove(board, starting_row, starting_col, ending_row, ending_col, playerTurn);
+		return;
+	}*/
+}
+bool OwnToken(char** board, int starting_row, int starting_col, int playerTurn)
+{
+	//player 1 capital
+	if (playerTurn == 0)
+	{
+		if (board[starting_row][starting_col] >= 'A' && board[starting_row][starting_col] <= 'Z')
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	if (playerTurn == 1)
+	{
+		if (board[starting_row][starting_col] >= 'a' && board[starting_row][starting_col] <= 'z')
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+}
+void KingMove(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int playerTurn)
+{
+	char player_move = board[starting_row][starting_col];
+
+	if (KingValidity(board, starting_row, starting_col, ending_row, ending_col, playerTurn))
+	{
+		board[ending_row][ending_col] = player_move;
+		board[starting_row][starting_col] = ' ';
+		return;
+	}
+	else
+	{
+		cout << "Wrong move.." << endl;
+		return;
+	}
+
+}
+void QueenMove(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int playerTurn)
+{
+	char player_move = board[starting_row][starting_col];
+
+	if (QueenValidity(board, starting_row, starting_col, ending_row, ending_col, playerTurn))
+	{
+		board[ending_row][ending_col] = player_move;
+		board[starting_row][starting_col] = ' ';
+		return;
+	}
+	else
+	{
+		cout << "Wrong move.." << endl;
+		return;
+	}
+}
+void RookMove(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int playerTurn)
+{
+	char player_move = board[starting_row][starting_col];
+
+	if (RookValidity(board, starting_row, starting_col, ending_row, ending_col, playerTurn))
+	{
+		board[ending_row][ending_col] = player_move;
+		board[starting_row][starting_col] = ' ';
+		return;
+	}
+	else
+	{
+		cout << "Wrong move.." << endl;
+		return;
+	}
+}
+void PawnMove(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int playerTurn)
+{
+	char player_move = board[starting_row][starting_col];
+
+	if (PawnValidity(board, starting_row, starting_col, ending_row, ending_col, playerTurn, playerTurn))
+	{
+		board[ending_row][ending_col] = player_move;
+		board[starting_row][starting_col] = ' ';
+		return;
+	}
+	else
+	{
+		cout << "Wrong move.." << endl;
+		return;
+	}
+}
+void KnightMove(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int playerTurn)
+{
+	char player_move = board[starting_row][starting_col];
+
+	if (KnightValidity(board, starting_row, starting_col, ending_row, ending_col, playerTurn))
+	{
+		board[ending_row][ending_col] = player_move;
+		board[starting_row][starting_col] = ' ';
+		return;
+	}
+	else
+	{
+		cout << "Wrong move.." << endl;
+		return;
+	}
+}
+void BishopMove(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int playerTurn)
+{
+	char player_move = board[starting_row][starting_col];
+
+	if (BishopValidity(board, starting_row, starting_col, ending_row, ending_col, playerTurn))
+	{
+		board[ending_row][ending_col] = player_move;
+		board[starting_row][starting_col] = ' ';
+		return;
+	}
+	else
+	{
+		cout << "Wrong move.." << endl;
+		return;
+	}
+}
+bool isCheck(char** board, int playerTurn)
+{
+	int kingRow = 0;
+	int kingCol = 0;
+
+
+	char king;
+	if (playerTurn == 0)
+	{
+		king = 'K';
+	}
+	else
+	{
+		king = 'k';
+	}
+
+	for (int i = 0; i < 8; i++)
+	{
+		for (int j = 0; j < 8; j++)
+		{
+			if (board[i][j] == king)
+			{
+				kingRow = i;
+				kingCol = j;
+				break;
+			}
+		}
+	}
+
+
+	for (int i = 0; i < 8; ++i)
+	{
+		for (int j = 0; j < 8; ++j)
+		{
+
+			char token = board[i][j];
+			int opponentTurn = 1 - playerTurn;
+
+			if ((token == 'n' || token == 'N') && KnightValidity(board, i, j, kingRow, kingCol, opponentTurn))
+			{
+				return true;
+			}
+			else if ((token == 'b' || token == 'B') && BishopValidity(board, i, j, kingRow, kingCol, opponentTurn))
+			{
+				return true;
+			}
+			else if ((token == 'r' || token == 'R') && RookValidity(board, i, j, kingRow, kingCol, opponentTurn))
+			{
+				return true;
+			}
+			else if ((token == 'q' || token == 'Q') && QueenValidity(board, i, j, kingRow, kingCol, opponentTurn))
+			{
+				return true;
+			}
+			else if ((token == 'k' || token == 'K') && KingValidity(board, i, j, kingRow, kingCol, opponentTurn))
+			{
+				return true;
+			}
+			else if ((token == 'p' || token == 'P') && PawnValidity(board, i, j, kingRow, kingCol, 0, opponentTurn))
+			{
+				return true;
+			}
+		}
+	}
+
+
+	return false;
+}
+void PawnPromotion(char** board, int playerTurn)
+{
+	int pawnRow = 0;
+	int pawnCol = 0;
+
+	char pawn;
+	if (playerTurn == 0)
+	{
+		pawn = 'P';
+	}
+	else
+	{
+		pawn = 'p';
+	}
+
+	for (int i = 0; i < 8; i++)
+	{
+		for (int j = 0; j < 8; j++)
+		{
+			if (board[i][j] == pawn)
+			{
+				pawnRow = i;
+				pawnCol = j;
+				break;
+			}
+		}
+	}
+
+	if (playerTurn == 0)
+	{
+		char user_choice = '\0';
+
+		if (pawnRow == 7)
+		{
+
+			cout << "enter what you want to transform your pawn into : " << endl;
+			cout << "1)Queen(Q)" << endl;
+			cout << "2)Rook(R)" << endl;
+			cout << "3)Knight(N)" << endl;
+			cout << "4)Bishop(B)" << endl;
+			cin >> user_choice;
+
+			cout << endl;
+
+			if (user_choice == 'Q')
+			{
+				board[pawnRow][pawnCol] = 'Q';
+				return;
+			}
+			else if (user_choice == 'R')
+			{
+				board[pawnRow][pawnCol] = 'R';
+				return;
+			}
+			else if (user_choice == 'N')
+			{
+				board[pawnRow][pawnCol] = 'N';
+				return;
+			}
+			else if (user_choice == 'B')
+			{
+				board[pawnRow][pawnCol] = 'B';
+				return;
+			}
+		}
+	}
+	else
+	{
+		char user_choice = '\0';
+
+		if (pawnRow == 0)
+		{
+
+			cout << "enter what you want to transform your pawn into : " << endl;
+			cout << "1)Queen(q)" << endl;
+			cout << "2)Rook(r)" << endl;
+			cout << "3)Knight(n)" << endl;
+			cout << "4)Bishop(b)" << endl;
+			cin >> user_choice;
+		}
+
+		cout << endl;
+
+		if (user_choice == 'q')
+		{
+			board[pawnRow][pawnCol] = 'q';
+			return;
+		}
+		else if (user_choice == 'r')
+		{
+			board[pawnRow][pawnCol] = 'r';
+			return;
+		}
+		else if (user_choice == 'n')
+		{
+			board[pawnRow][pawnCol] = 'n';
+			return;
+		}
+		else if (user_choice == 'b')
+		{
+			board[pawnRow][pawnCol] = 'b';
+			return;
+		}
+	}
+}
+bool PawnCapture(char** board, int starting_row, int starting_col, int ending_row, int ending_col, int playerTurn)
+{
+
+	if (playerTurn == 0)
+	{
+		if ((ending_row - starting_row == 1) && (ending_col - starting_col == -1) && (board[ending_row][ending_col] >= 'a' &&
+			board[ending_row][ending_col] <= 'z'))
+		{
+			return true;
+		}
+
+		if ((ending_row - starting_row == 1) && (ending_col - starting_col == 1) && (board[ending_row][ending_col] >= 'a' &&
+			board[ending_row][ending_col] <= 'z'))
+		{
+			return true;
+		}
+	}
+
+	if (playerTurn == 1)
+	{
+		if ((ending_row - starting_row == -1) && (ending_col - starting_col == -1) && (board[ending_row][ending_col] >= 'A' &&
+			board[ending_row][ending_col] <= 'Z'))
+		{
+			return true;
+		}
+
+		if ((ending_row - starting_row == -1) && (ending_col - starting_col == 1) && (board[ending_row][ending_col] >= 'A' &&
+			board[ending_row][ending_col] <= 'Z'))
+		{
+			return true;
+		}
+	}
+
+
+	return false;
+
+}
