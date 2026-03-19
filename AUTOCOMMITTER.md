@@ -1,1 +1,1 @@
-The first oranges weren’t orange — they were green.
+The tongue is the only muscle in the body attached from one end.
