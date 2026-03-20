@@ -1,1 +1,1 @@
-The tongue is the only muscle in the body attached from one end.
+Cows can walk up stairs but not down.
