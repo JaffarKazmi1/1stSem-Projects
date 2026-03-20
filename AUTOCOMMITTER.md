@@ -1,1 +1,1 @@
-Cows can walk up stairs but not down.
+Sharks are the only fish that can blink with both eyes.
