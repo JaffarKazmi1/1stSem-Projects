@@ -1,1 +1,1 @@
-Sharks existed before trees.
+Newborns don’t shed tears until about two weeks old.
