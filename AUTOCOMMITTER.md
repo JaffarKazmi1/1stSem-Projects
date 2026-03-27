@@ -1,1 +1,1 @@
-A snail can grow back its eye if it gets cut off.
+A human could swim through a blue whale’s arteries.
