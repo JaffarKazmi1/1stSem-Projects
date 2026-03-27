@@ -1,1 +1,1 @@
-Sharks are the only fish that can blink with both eyes.
+A snail can grow back its eye if it gets cut off.
