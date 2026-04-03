@@ -1,1 +1,1 @@
-A jiffy is an actual unit of time — 1/100th of a second.
+The average person walks the equivalent of five times around the world in a lifetime.
