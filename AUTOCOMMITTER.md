@@ -1,1 +1,1 @@
-Otters have a favorite rock they use to break open food.
+Peanuts aren’t nuts — they’re legumes.
